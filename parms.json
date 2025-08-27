@@ -1,0 +1,5 @@
+{
+    "TRAINING_PARMS": {
+      "TEST_SIZE": 0.2
+    }
+}

@@ -1,0 +1,17 @@
+{
+    "DATA_INGESTION": {
+      "ZIP_FILE": "artifacts/",         
+      "UNZIP_DIR": "artifacts/data/credcard.csv"            
+    },
+
+    "DATA_PROCESSING": {
+      "RAW_DATA" : "artifacts/creditcard.csv",
+      "BALANCED_DATA" : "artifacts/processed_data/balanced_creditcard.csv"
+    },
+
+    "MODEL": {
+      "BALANCED_DATA" : "artifacts/processed_data/balanced_creditcard.csv",
+      "TRAINED_MODEL": "artifacts/model/modelv1.pkl"
+    }
+   }
+  

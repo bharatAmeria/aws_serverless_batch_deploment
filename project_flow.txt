@@ -1,0 +1,16 @@
+1. Create repo, clone it in local
+2. Create Python virtual environement -> uv venv --python 3.10 .venv (Install using uv. If not installed -> pip install uv)
+    (If you are making virtual environement with other name. Make sure to add it into .gitignore file.)
+    2.1. Activate the environement -> source .venv/bin/activate
+    2.2. Install packages using -> uv add requests pandas
+    2.3. Install dependencies -> uv sync --frozen or uv sync 
+    2.4. See libraries and its dependencies -> uv tree
+    2.5. Run Python file using -> uv run <file_name>
+    2.6. Remove Python flask -> uv remove <package_name>
+3. Copy config.json Paste in the root directory.
+4. Copy pyproject.toml file. Save it in your directory and Change author name accordingly.
+5. Copy and paste src folder in your project directory.
+6. Now configure our src folder as a package using -> uv pip install -e .
+7. 
+8. Copy main.py file project root directory. Run file main.py to check if components are working or not.
+9. 
