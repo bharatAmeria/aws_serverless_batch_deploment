@@ -208,4 +208,4 @@ __marimo__/
 uv.lock
 logs/
 artifacts/
-lambda_batch_prediction/package/
+lambda_batch_prediction/package

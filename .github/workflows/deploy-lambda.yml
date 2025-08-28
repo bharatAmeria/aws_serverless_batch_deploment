@@ -1,0 +1,31 @@
+name: Python CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # 2. Set up Python 3.10
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+
+      # 11. Optional: Run tests
+      - name: Run Tests
+        run: |
+          if [ -d "tests" ]; then
+            uv run -m pytest tests
+          else
+            echo "No tests folder found, skipping..."
+          fi
