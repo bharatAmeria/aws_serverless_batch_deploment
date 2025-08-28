@@ -30,7 +30,8 @@ class Training_Pipeline:
                 data_path=balanced_data_path,
                 model_path=model_path,
                 X=X,
-                Y=Y
+                Y=Y,
+                config=config 
             )
 
             test_size = parms.get("TEST_SIZE", 0.2)
@@ -43,4 +44,11 @@ class Training_Pipeline:
             print(f"✅ Test Accuracy: {test_acc:.4f}")
 
         except MyException as e:
+            raise MyException(e, sys)
+        
+if __name__ == '__main__':
+    try:
+        obj = Training_Pipeline()
+        obj.main()
+    except MyException as e:
             raise MyException(e, sys)
