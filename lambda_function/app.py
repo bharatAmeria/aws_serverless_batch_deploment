@@ -9,15 +9,28 @@ import logging
 import traceback
 
 # -------------------------------
-# Setup logging
+# Setup logging for CloudWatch
 # -------------------------------
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
+# Optional: Add a formatter for more structured logs
+formatter = logging.Formatter(
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
+if not logger.handlers:
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+
+logger.info("Logger initialized successfully.")
 
 # -------------------------------
 # Initialize S3 client
 # -------------------------------
 s3 = boto3.client("s3")
+logger.info("S3 client initialized.")
 
 # -------------------------------
 # Configuration
@@ -28,12 +41,16 @@ OUTPUT_BUCKET = "learnyard-data-ingestion"
 
 def lambda_handler(event, context):
     try:
+        logger.info("Lambda function started.")
+        
         # -------------------------------
         # Check if model exists in S3
         # -------------------------------
         try:
             s3.head_object(Bucket=MODEL_BUCKET, Key=MODEL_KEY)
+            logger.info(f"Model found in S3: s3://{MODEL_BUCKET}/{MODEL_KEY}")
         except Exception:
+            logger.error(f"Model not found in S3: s3://{MODEL_BUCKET}/{MODEL_KEY}")
             raise FileNotFoundError(f"Model not found in S3: s3://{MODEL_BUCKET}/{MODEL_KEY}")
 
         # -------------------------------
@@ -44,6 +61,7 @@ def lambda_handler(event, context):
         os.makedirs(tmp_dir, exist_ok=True)
         local_output_path = os.path.join(tmp_dir, f"prediction_output_{timestamp}.json")
         output_key = f"predictions/prediction_output_{timestamp}.json"
+        logger.info(f"Temporary output path prepared: {local_output_path}")
 
         # -------------------------------
         # Download model
@@ -51,6 +69,7 @@ def lambda_handler(event, context):
         local_model_path = "/tmp/model.pkl"
         logger.info(f"Downloading model from s3://{MODEL_BUCKET}/{MODEL_KEY}")
         s3.download_file(MODEL_BUCKET, MODEL_KEY, local_model_path)
+        logger.info("Model downloaded successfully.")
 
         # -------------------------------
         # Load model
@@ -78,6 +97,7 @@ def lambda_handler(event, context):
         random_inputs = np.vstack([non_fraud_inputs, fraud_inputs])
         np.random.shuffle(random_inputs)
         input_df = pd.DataFrame(random_inputs, columns=feature_columns)
+        logger.info(f"Generated input data for {num_samples} samples.")
 
         # -------------------------------
         # Make predictions safely
@@ -106,6 +126,7 @@ def lambda_handler(event, context):
         s3.upload_file(local_output_path, OUTPUT_BUCKET, output_key)
         logger.info(f"Predictions uploaded to s3://{OUTPUT_BUCKET}/{output_key}")
 
+        logger.info("Lambda function completed successfully.")
         return {
             "statusCode": 200,
             "body": f"Batch prediction for {num_samples} samples completed successfully! File: s3://{OUTPUT_BUCKET}/{output_key}"

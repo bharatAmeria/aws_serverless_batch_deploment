@@ -46,32 +46,31 @@
     e. Follow command step by step.
 
 16. Test Docker Image Locally -> 
-      docker run -p 9000:8080 -e AWS_ACCESS_KEY_ID= <  > -e AWS_SECRET_ACCESS_KEY= <  > -e AWS_DEFAULT_REGION= <  > 684931212328.dkr.ecr.eu-north-1.amazonaws.com/batch_prediction_lambda:latest
+        aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 684931265998.dkr.ecr.eu-north-1.amazonaws.com
+        docker pull 684931265998.dkr.ecr.eu-north-1.amazonaws.com/serverless_batch_prediction:latest
+
+        # 2️⃣ Run the Lambda image locally
+        docker run -p 9000:8080 \
+        -e AWS_ACCESS_KEY_ID=<your-access-key-id> \
+        -e AWS_SECRET_ACCESS_KEY=<your-secret-access-key> \
+        -e AWS_DEFAULT_REGION=eu-north-1 \
+        -e AWS_S3_BUCKET_NAME=learnyard-data-ingestion \
+        684931265998.dkr.ecr.eu-north-1.amazonaws.com/serverless_batch_prediction:latest
+
 
 17.  invoke using -> curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" -d '{}'
       (it should give respone 200)
 
-18. Iam s3 role permission for lambda_function
-       (Create file name trust-policy.json)
-       aws iam create-role --role-name lambda-s3-role --assume-role-policy-document file://trust-policy.json
-       aws iam attach-role-policy --role-name lambda-s3-role --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess
+18. Copy .github folder. (To automate the whole Process till pushing our model to S3 bucket. and Build and push image to ECR.)
 
-19. Create lambda_function using below Command ->
+Add below secrets in your github_repo > settings > secrets and variables > actions. 
+DATASET_URI = https://drive.google.com/file/d/1c6ZJYrF8jAJ8r0rVja8h9-ea1EhEPfde/view?usp=sharing
+AWS_ACCESS_KEY_ID= 
+AWS_SECRET_ACCESS_KEY= 
+AWS_S3_BUCKET_NAME= 
+AWS_DEFAULT_REGION= 
+AWS_ACCOUNT_ID = 
 
-aws lambda create-function --function-name batch_prediction_lambda --package-type Image --code ImageUri=684931265998.dkr.ecr.eu-north-1.amazonaws.com/batch_prediction_lambda:latest --role arn:aws:iam::684931265998:role/lambda-s3-role 
-  --timeout 300 \
-  --memory-size 1024
-
-20. Invoke lambda function -> 
-    aws lambda invoke \
-    --function-name batch_prediction_lambda \
-    --payload '{}' \
-    response.json
-    cat response.json
-
-(Should return a status 200 and the S3 path:)
-
-21. Copy .github folder. (To automate the whole Process till pushing our model to S3 bucket.)
 
 ---------------------------------------
 
