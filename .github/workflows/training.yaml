@@ -11,48 +11,65 @@ on:
 jobs:
   setup:
     runs-on: ubuntu-latest
-    
+    env:
+      DATASET_URL: ${{ secrets.DATASET_URL }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+      AWS_S3_BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME }}
+
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-    - name: Install uv
-      run: pip install uv
+      - name: Install uv and python-dotenv
+        run: |
+          pip install uv
+          pip install python-dotenv
 
-    - name: Create venv
-      run: uv venv
+      - name: Create virtual environment
+        run: uv venv
 
-    - name: Install project in editable mode
-      run: uv pip install -e .
+      - name: Install project in editable mode
+        run: uv pip install -e .
 
-    - name: Install dependencies from pyproject.toml
-      run: uv sync
+      - name: Install dependencies from pyproject.toml
+        run: uv sync
 
-    - name: Data Ingestion
-      run: uv run python src/pipeline/stage01_data_ingestion.py
-    
-    - name: Data Processing
-      run: uv run python src/pipeline/stage02_processing.py
+      - name: Data Ingestion
+        run: uv run python src/pipeline/stage01_data_ingestion.py
+        env:
+          DATASET_URL: ${{ secrets.DATASET_URL }}
 
-    - name: Training
-      run: uv run python src/pipeline/stage03_training.py
+      - name: Data Processing
+        run: uv run python src/pipeline/stage02_processing.py
+        env:
+          DATASET_URL: ${{ secrets.DATASET_URL }}
+
+      - name: Training
+        run: uv run python src/pipeline/stage03_training.py
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          AWS_S3_BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME }}
 
   post:
     needs: setup
     runs-on: ubuntu-latest
-    
-    steps:
-    - name: Notify success
-      if: success()
-      run: |
-        echo "✅ Training Pipeline completed successfully!"
-        echo "🚀 Triggering deployment job..."
 
-    - name: Notify failure
-      if: failure()
-      run: echo "❌ Pipeline failed. Check logs."
+    steps:
+      - name: Notify success
+        if: success()
+        run: |
+          echo "✅ Training Pipeline completed successfully!"
+          echo "🚀 Triggering deployment job..."
+
+      - name: Notify failure
+        if: failure()
+        run: echo "❌ Pipeline failed. Check logs."
