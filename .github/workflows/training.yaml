@@ -44,13 +44,7 @@ jobs:
           echo "AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }}" >> .env
 
       - name: Data Ingestion
-        run: uv run python src/pipeline/stage01_data_ingestion.py
-
-      - name: Data Processing
-        run: uv run python src/pipeline/stage02_processing.py
-
-      - name: Training
-        run: uv run python src/pipeline/stage03_training.py
+        run: uv run python main.py
 
   post:
     needs: setup
