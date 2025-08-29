@@ -1,0 +1,58 @@
+name: Training Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install uv
+      run: pip install uv
+
+    - name: Create venv
+      run: uv venv
+
+    - name: Install project in editable mode
+      run: uv pip install -e .
+
+    - name: Install dependencies from pyproject.toml
+      run: uv sync
+
+    - name: Data Ingestion
+      run: uv run python src/pipeline/stage01_data_ingestion.py
+    
+    - name: Data Processing
+      run: uv run python src/pipeline/stage02_processing.py
+
+    - name: Training
+      run: uv run python src/pipeline/stage03_training.py
+
+  post:
+    needs: setup
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Notify success
+      if: success()
+      run: |
+        echo "✅ Training Pipeline completed successfully!"
+        echo "🚀 Triggering deployment job..."
+
+    - name: Notify failure
+      if: failure()
+      run: echo "❌ Pipeline failed. Check logs."
