@@ -39,10 +39,14 @@ jobs:
       - name: Login to Amazon ECR
         run: |
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
 
       # 5️⃣ Build Docker image
       - name: Build Docker image
-        run: docker build -t $ECR_REPO_NAME:latest ./app
+        run: docker build -t $ECR_REPO_NAME:latest -f lambda_function/Dockerfile lambda_function
 
       # 6️⃣ Tag Docker image with ECR URI
       - name: Tag Docker image
@@ -52,6 +56,7 @@ jobs:
       - name: Push Docker image to ECR
         run: docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO_NAME:latest
 
+      # 8️⃣ Notifications
       - name: Notify Docker success
         if: ${{ success() }}
         run: echo "✅ Docker image pushed to ECR successfully!"
